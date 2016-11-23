@@ -1,5 +1,6 @@
 # Compare Voting Results with Equipment Type, 2016 US Presidential Election
 
+
 Get result data:
 
    curl 'http://data.cnn.com/ELECTION/2016/WI/county/P_county.json' -o ./results/WI_results.txt

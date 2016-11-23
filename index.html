@@ -1,5 +1,5 @@
 <html>
-<head><title>Votar</title>
+<head><title>Votar: Analyzing the 2016 Election by Equipment and Results</title>
   <style>
     body {
       font-family: Helvetica;
@@ -73,7 +73,7 @@
     line = line + '<td>' + item.county + '</td>';
     line = line + '<td>' + item['pp_system'] + '</td>';
     line = line + '<td>' + item['pp_acc_system'] + '</td>';
-     // console.log(states[state].counties[county]);
+     console.log(states[state].counties[county]);
 
     
     var temp = {};
@@ -84,7 +84,8 @@
     for (var i = 0; i < r.length; i = i + 1) {
       tv = tv + r[i].votes;
       temp[r[i].lname] = {
-        't': r[i].votes
+        't': r[i].votes,
+        'p': r[i].pctDecimal
       }
       var m = item['pp_system'] + ' / ' + item['pp_acc_system'];
       if (!byMethod[m]) {
@@ -101,11 +102,11 @@
     }
 
     line = line + '<td';
-    line = line + '>' + temp['Trump'].t;   
+    line = line + '>' + temp['Trump'].t + ' ' + temp['Trump'].p + '%';   
     line = line + '</td>';
 
     line = line + '<td';
-    line = line + '>' + temp['Clinton'].t;
+    line = line + '>' + temp['Clinton'].t+ ' ' + temp['Clinton'].p + '%';
     line = line + '</td>';
 
     line = line + '<td';
@@ -113,23 +114,23 @@
     if (temp['Johnson'] && temp['Johnson'].t) {
       johnson = temp['Johnson'].t;
     }
-    line = line + '>' + johnson + '</td>';
+    line = line + '>' + johnson + ' ' + temp['Johnson'].p + '%</td>';
 
     line = line + '<td';
     var stein = 0;
     if (temp['Stein'] && temp['Stein'].t) {
       stein = temp['Stein'].t;
     }
-    line = line + '>' + stein + '</td>';
+    line = line + '>' + stein  + ' ' + temp['Stein'].p + '%</td>';
     
     line = line + '<td';
     line = line + '>' + tv + '</td>';
     
     line = line + '<td';
-    line = line + '>' + gap + '</td>';
+    line = line + '>' + gap + ' ' + ~~((gap / tv) * 1000) / 10 + '%</td>';
 
     line = line + '<td';
-    line = line + '>' + (temp['Trump'].t / temp['Clinton'].t) + '</td>';
+    line = line + '>' + ~~((temp['Trump'].t / temp['Clinton'].t) * 1000) / 1000 + '</td>';
     
     line = line + '</tr>\n';
     
@@ -154,8 +155,6 @@
   
     output.innerHTML = '<tr><th>County</th><th>Voting</th><th>Counting</th><th>Trump</th><th>Clinton</th><th>Johnson</th><th>Stein</th><th>Total</th><th>Trump - Clinton</th><th>Trump / Clinton</th></tr>';
 
-    // for (var j = 0; j < st.length; j = j + 1) {
-      // var k = st[j];
       var k = yeState;
       states[k] = {
         'counties': {}
@@ -192,7 +191,6 @@
           }
         }
       }
-    // }
     
     var line = '<tr><th colspan="3">Voting / Counting</th><th>Trump</th><th>Clinton</th><th>Johnson</th><th>Stein</th><th>Total</th><th>Trump - Clinton</th><th>Trump / Clinton</th></tr>';
     output.innerHTML = output.innerHTML + line;
@@ -210,13 +208,13 @@
         line = line + ' class="negative"';
       }
       line = line + '><td colspan="3">' + m + '</td>';
-      line = line + '<td>' + byMethod[m]['Trump'] + '</td>';
-      line = line + '<td>' + byMethod[m]['Clinton'] + '</td>';
-      line = line + '<td>' + byMethod[m]['Johnson'] + '</td>';
-      line = line + '<td>' + byMethod[m]['Stein'] + '</td>';
+      line = line + '<td>' + byMethod[m]['Trump'] + ' ' + ~~((byMethod[m]['Trump'] / bmt) * 1000) / 10 + '%</td>';
+      line = line + '<td>' + byMethod[m]['Clinton'] + ' ' + ~~((byMethod[m]['Clinton'] / bmt) * 1000) / 10 + '%</td>';
+      line = line + '<td>' + byMethod[m]['Johnson'] + ' ' + ~~((byMethod[m]['Johnson'] / bmt) * 1000) / 10 + '%</td>';
+      line = line + '<td>' + byMethod[m]['Stein'] + ' ' + ~~((byMethod[m]['Stein'] / bmt) * 1000) / 10 + '%</td>';
       line = line + '<td>' + bmt + '</td>';
-      line = line + '<td>' + margin + '</td>';
-      line = line + '<td>' + divvy + '</td>';
+      line = line + '<td>' + margin + ' ' + ~~((margin / bmt) * 1000) / 10 + '%</td>';
+      line = line + '<td>' + ~~(divvy * 1000) / 1000 + '</td>';
       line = line + '</tr>';
       output.innerHTML = output.innerHTML + line;
     }
@@ -235,9 +233,10 @@
     line = line + '<td>' + totals['Stein'] + '</td>';
     line = line + '<td>' + grand + '</td>';
     line = line + '<td>' + margin + '</td>';
-    line = line + '<td>' + divvy + '</td>';
+    line = line + '<td>' + ~~(divvy * 1000) / 1000 + '</td>';
     line = line + '</tr>';
     output.innerHTML = output.innerHTML + line;
+
 
         
     // output.innerHTML = JSON.stringify(states, null, 2);

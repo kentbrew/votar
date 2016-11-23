@@ -1,0 +1,8 @@
+curl 'http://data.cnn.com/ELECTION/2016/WI/county/P_county.json' WI_results.json
+
+tr -d "\n\r" < WI_results.txt | sed s/^/"results['WI']="/ > WI_results.js
+
+curl 'https://www.verifiedvoting.org/wp-content/themes/verified_voting/verifier/api/api.php?db_year=2016&state_fips=55' -o WI_equip.json
+
+tr -d "\n\r" < AL_equip.txt | sed s/^/"equip['WI']="/ > WI_equip.js
+

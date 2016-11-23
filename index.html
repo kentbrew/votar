@@ -1,0 +1,273 @@
+<html>
+<head><title>Analyze</title>
+  <style>
+    .negative {
+      background: #ffa;
+    }
+  </style>
+</head>
+<body>
+
+<select id="chooseState"></select>
+<table id="output" border="1" cellpadding="5" cellspacing="0"></table>
+
+<script>
+  var d = document;
+  var output = document.getElementById('output');
+  
+  var totals, byMethod, grand;
+  
+  var w = window;
+
+  var equip = {};
+  var results = {};
+
+  var st = ['AL', 'AK', 'AR', 'AZ', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'];
+
+  var yeState = 'WI';
+
+  var chooseState = d.getElementById('chooseState');
+  for (var i = 0; i < st.length; i = i + 1) {
+    var opt = d.createElement('OPTION');
+    opt.innerHTML = st[i];
+    opt.value = st[i];
+    if (opt.value === yeState) {
+      opt.selected = true;
+    }
+    chooseState.appendChild(opt);
+  }
+  
+  chooseState.onchange = function() {
+    yeState = this.value;
+    go();
+  };
+  
+
+  var states = {};
+
+  var update = function (state, county, item) {
+    states[state].counties[county].equip = item;   
+    var r = states[state].counties[county].results.race.candidates;
+    r.sort(function (a, b) {
+      return b.votes > a.votes;
+    });
+    var gap = r[0].votes - r[1].votes;
+    if (r[0].lname === 'Clinton') {
+      gap = 0 - gap;
+    }
+    
+    var line = '<tr ';
+    if (gap < 0) {
+      line = line + ' class="negative"';
+    }
+    line = line + '>';
+  
+    line = line + '<td>' + item.county + '</td>';
+    line = line + '<td>' + item['pp_system'] + '</td>';
+    line = line + '<td>' + item['pp_acc_system'] + '</td>';
+     // console.log(states[state].counties[county]);
+
+    
+    var temp = {};
+    
+    var tv = 0;
+
+
+    for (var i = 0; i < r.length; i = i + 1) {
+      tv = tv + r[i].votes;
+      temp[r[i].lname] = {
+        't': r[i].votes
+      }
+      var m = item['pp_system'] + ' / ' + item['pp_acc_system'];
+      if (!byMethod[m]) {
+        byMethod[m] = {
+          'Trump': 0,
+          'Clinton': 0,
+          'Johnson': 0,
+          'Stein': 0
+        };
+      }
+      byMethod[m][r[i].lname] = byMethod[m][r[i].lname] + r[i].votes;
+      totals[r[i].lname] = totals[r[i].lname] + r[i].votes;
+      grand = grand + r[i].votes;
+    }
+
+    line = line + '<td';
+    line = line + '>' + temp['Trump'].t;   
+    line = line + '</td>';
+
+    line = line + '<td';
+    line = line + '>' + temp['Clinton'].t;
+    line = line + '</td>';
+
+    line = line + '<td';
+    var johnson = 0;
+    if (temp['Johnson'] && temp['Johnson'].t) {
+      johnson = temp['Johnson'].t;
+    }
+    line = line + '>' + johnson + '</td>';
+
+    line = line + '<td';
+    var stein = 0;
+    if (temp['Stein'] && temp['Stein'].t) {
+      stein = temp['Stein'].t;
+    }
+    line = line + '>' + stein + '</td>';
+    
+    line = line + '<td';
+    line = line + '>' + tv + '</td>';
+    
+    line = line + '<td';
+    line = line + '>' + gap + '</td>';
+
+    line = line + '<td';
+    line = line + '>' + (temp['Trump'].t / temp['Clinton'].t) + '</td>';
+    
+    line = line + '</tr>\n';
+    
+    if (gap < 0) {
+      line = line.replace('<tr>', '<tr class="negative">');
+    }
+    output.innerHTML = output.innerHTML + line;
+  };
+
+  var render = function () {
+
+    totals = {
+      'Trump': 0,
+      'Clinton': 0,
+      'Johnson': 0,
+      'Stein': 0
+    };
+    
+    byMethod = { };
+    
+    grand = 0;
+  
+    output.innerHTML = '<tr><th>County</th><th>Voting</th><th>Counting</th><th>Trump</th><th>Clinton</th><th>Johnson</th><th>Stein</th><th>Total</th><th>Difference</th><th>Fraction</th></tr>';
+
+    // for (var j = 0; j < st.length; j = j + 1) {
+      // var k = st[j];
+      var k = yeState;
+      states[k] = {
+        'counties': {}
+      };
+      var cc = results[k].counties;
+      if (cc) {
+        for (var i = 0; i < cc.length; i = i + 1) {
+          var code = cc[i].countycode;
+          states[k].counties['' + code] = {
+            'results': cc[i]
+          }
+        }
+      }
+
+      var rr = equip[k].region_list;
+      if (rr) {
+        for (var i = 0; i < rr.length; i = i + 1) {
+          var code = '' + rr[i].state_fips + rr[i].county_fips;
+          if (states[k].counties[code]) {
+            update(k, code, rr[i]);
+          } else {
+            code = '' + rr[i].state_fips + '0' + rr[i].county_fips;
+            if (states[k].counties[code]) {
+              update(k, code, rr[i]);
+            } else {
+              code = '' + rr[i].state_fips + '00' + rr[i].county_fips;
+              if (states[k].counties[code]) {
+                update(k, code, rr[i]);
+              } else {
+                console.log('Cannot find ' + k + ' ' + rr[i].county);
+                console.log(rr[i]);
+              }
+            }
+          }
+        }
+      }
+    // }
+    
+    var line = '<tr><th colspan="3">Voting / Counting</th><th>Trump</th><th>Clinton</th><th>Johnson</th><th>Stein</th><th>Total</th><th>Difference</th><th>Fraction</th></tr>';
+    output.innerHTML = output.innerHTML + line;
+
+    for (var m in byMethod) {
+      var bmt = 0;
+      
+      for (var c in byMethod[m]) {
+        bmt = bmt + byMethod[m][c];
+      }
+      var margin = byMethod[m]['Trump'] - byMethod[m]['Clinton'];
+      var divvy = byMethod[m]['Trump'] / byMethod[m]['Clinton'];
+      line = '<tr';
+      if (margin < 0) {
+        line = line + ' class="negative"';
+      }
+      line = line + '><td colspan="3">' + m + '</td>';
+      line = line + '<td>' + byMethod[m]['Trump'] + '</td>';
+      line = line + '<td>' + byMethod[m]['Clinton'] + '</td>';
+      line = line + '<td>' + byMethod[m]['Johnson'] + '</td>';
+      line = line + '<td>' + byMethod[m]['Stein'] + '</td>';
+      line = line + '<td>' + bmt + '</td>';
+      line = line + '<td>' + margin + '</td>';
+      line = line + '<td>' + divvy + '</td>';
+      line = line + '</tr>';
+      output.innerHTML = output.innerHTML + line;
+    }
+
+    
+    var margin = totals['Trump'] - totals['Clinton'];
+    var divvy = totals['Trump'] / totals['Clinton'];
+    line = '<tr';
+    if (margin < 0) {
+      line = line + ' class="negative"';
+    }
+    line = line + '><td colspan="3"></td>';
+    line = line + '<td>' + totals['Trump'] + '</td>';
+    line = line + '<td>' + totals['Clinton'] + '</td>';
+    line = line + '<td>' + totals['Johnson'] + '</td>';
+    line = line + '<td>' + totals['Stein'] + '</td>';
+    line = line + '<td>' + grand + '</td>';
+    line = line + '<td>' + margin + '</td>';
+    line = line + '<td>' + divvy + '</td>';
+    line = line + '</tr>';
+    output.innerHTML = output.innerHTML + line;
+
+        
+    // output.innerHTML = JSON.stringify(states, null, 2);
+    // console.log(states);
+  };
+
+var go = function() {
+  
+  var k = 0;
+
+  var e = d.createElement('SCRIPT');
+  e.src = 'equip/' + yeState + '_equip.js';
+  e.onload = function () {
+    k = k + 1;
+  };
+  d.body.appendChild(e);
+  var r = d.createElement('SCRIPT');
+  r.onload = function () {
+    k = k + 1;
+  };
+  r.src = 'results/' + yeState + '_results.js';
+  d.body.appendChild(r);
+  
+
+  var ck = function () {
+    if (k < 2) {
+      w.setTimeout(ck, 1000);
+    } else {
+      render();
+    }
+  };
+  ck();
+};
+
+  go();
+
+
+
+</script>
+</body>
+</html>

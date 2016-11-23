@@ -1,6 +1,9 @@
 <html>
-<head><title>Analyze</title>
+<head><title>Votar</title>
   <style>
+    body {
+      font-family: Helvetica;
+    }
     .negative {
       background: #ffa;
     }
@@ -8,7 +11,12 @@
 </head>
 <body>
 
-<select id="chooseState"></select>
+<h1>Analyzing the 2016 Election by Equipment and Results</h1>
+<p>Choose State: <select id="chooseState"></select></p>
+<p><a href="https://github.com/kentbrew/votar/">About This Project</a></p>
+<p>Careful, now: the results data were captured from CNN before everything closed, so numbers won't agree with final tallies available elsewhere.</p>
+<p>See <a href="https://www.verifiedvoting.org/">Verified Voting</a> for more about what those equipment codes mean.  If you see "PB" it means "paper ballot."</p>
+
 <table id="output" border="1" cellpadding="5" cellspacing="0"></table>
 
 <script>
@@ -144,7 +152,7 @@
     
     grand = 0;
   
-    output.innerHTML = '<tr><th>County</th><th>Voting</th><th>Counting</th><th>Trump</th><th>Clinton</th><th>Johnson</th><th>Stein</th><th>Total</th><th>Difference</th><th>Fraction</th></tr>';
+    output.innerHTML = '<tr><th>County</th><th>Voting</th><th>Counting</th><th>Trump</th><th>Clinton</th><th>Johnson</th><th>Stein</th><th>Total</th><th>Trump - Clinton</th><th>Trump / Clinton</th></tr>';
 
     // for (var j = 0; j < st.length; j = j + 1) {
       // var k = st[j];
@@ -186,7 +194,7 @@
       }
     // }
     
-    var line = '<tr><th colspan="3">Voting / Counting</th><th>Trump</th><th>Clinton</th><th>Johnson</th><th>Stein</th><th>Total</th><th>Difference</th><th>Fraction</th></tr>';
+    var line = '<tr><th colspan="3">Voting / Counting</th><th>Trump</th><th>Clinton</th><th>Johnson</th><th>Stein</th><th>Total</th><th>Trump - Clinton</th><th>Trump / Clinton</th></tr>';
     output.innerHTML = output.innerHTML + line;
 
     for (var m in byMethod) {
